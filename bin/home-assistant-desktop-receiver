@@ -31,6 +31,7 @@ class HomeAssistantIntegrator(http.server.BaseHTTPRequestHandler):
     def do_GET(s):
         url = parse.urlparse(s.path)
         endpoint = url.path
+        print(endpoint)
         query = parse.parse_qs(url.query)
         if endpoint == "/notifications":
             message = query["message"][0]
