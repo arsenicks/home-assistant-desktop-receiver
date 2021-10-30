@@ -3,6 +3,10 @@ import http.server
 import socketserver
 from urllib import parse
 import dbus
+import cgi
+import json
+
+
 
 PORT = 8124
 
@@ -23,6 +27,11 @@ class HomeAssistantIntegrator(http.server.BaseHTTPRequestHandler):
         if value:
             response = b"1"
         s.wfile.write(response)
+
+    def _set_headers(s):
+        s.send_response(200)
+        s.send_header('Content-type', 'application/json')
+        s.end_headers()
 
     def error(s):
         s.send_response(403)
@@ -70,6 +79,35 @@ class HomeAssistantIntegrator(http.server.BaseHTTPRequestHandler):
 
         else:
             s.error()
+
+    # POST echoes the message adding a JSON field
+    def do_POST(s):
+        #ctype, pdict = cgi.parse_header(s.headers.getheader('content-type'))
+        #fix python3https://stackoverflow.com/questions/31486618/cgi-parse-multipart-function-throws-typeerror-in-python-3
+        c_type, p_dict = cgi.parse_header(s.headers.get('Content-Type'))
+        
+        # refuse to receive non-json content
+        if c_type != 'application/json':
+            s.send_response(400)
+            s.end_headers()
+            return
+            
+        # read the message and convert it into a python dictionary
+        #length = int(s.headers.getheader('content-length'))
+        #fix python3
+        length = int(s.headers.get('content-length'))
+        message = json.loads(s.rfile.read(length))
+        title = json.loads(s.rfile.read(length))
+        print(message)
+        print(title)
+        #print(json.loads(s.rfile.read(length)))
+        
+        # add a property to the object, just to mess with data
+        #message['received'] = 'ok'
+        
+        # send the message back
+        #s._set_headers()
+        #s.wfile.write(json.dumps(message))
 
 if __name__ == '__main__':
     httpd = socketserver.TCPServer(("", PORT), HomeAssistantIntegrator)
