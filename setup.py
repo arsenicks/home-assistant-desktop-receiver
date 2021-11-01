@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from distutils.core import setup
 
-version = "0.1"
+version = "0.2"
 
 scripts = ["bin/home-assistant-desktop-receiver"]
 
